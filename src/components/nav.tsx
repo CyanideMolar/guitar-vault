@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { Guitar, Settings, LogOut, User, Wrench } from 'lucide-react'
+import { Avatar, AvatarImage, AvatarFallback } from '@radix-ui/react-avatar'
 
 export function Nav() {
   const { data: session } = useSession()
@@ -47,16 +48,17 @@ export function Nav() {
           <div className="flex items-center gap-2 sm:gap-4">
             {session ? (
               <>
-                {session.user?.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={session.user.image}
-                    alt={session.user.name ?? 'User'}
-                    className="h-8 w-8 rounded-full"
+                <Avatar className="h-8 w-8">
+                  <AvatarImage
+                    src={session.user?.image ?? ''}
+                    alt={session.user?.name ?? 'User'}
+                    className="rounded-full object-cover"
+                    referrerPolicy="no-referrer"
                   />
-                ) : (
-                  <User className="h-5 w-5 text-gray-500" />
-                )}
+                  <AvatarFallback>
+                    <User className="h-5 w-5 text-gray-500" />
+                  </AvatarFallback>
+                </Avatar>
                 <span className="hidden text-sm text-gray-700 sm:block">{session.user?.name}</span>
                 <button
                   onClick={() => signOut()}

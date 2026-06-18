@@ -18,6 +18,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     session({ session, user }) {
       if (session.user) {
         session.user.id = user.id
+        session.user.image = user.image
         // @ts-expect-error role is added via db
         session.user.role = user.role
       }
