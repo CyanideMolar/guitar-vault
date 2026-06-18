@@ -27,7 +27,8 @@ export async function POST(req: NextRequest) {
   const buffer = Buffer.from(bytes)
   const ext = file.name.split('.').pop()
   const filename = `${session.user.id}-${Date.now()}.${ext}`
-  const uploadPath = path.join(process.cwd(), 'public', 'uploads', filename)
+  const uploadDir = process.env.UPLOAD_DIR ?? path.join(process.cwd(), 'public', 'uploads')
+  const uploadPath = path.join(uploadDir, filename)
 
   await writeFile(uploadPath, buffer)
 
