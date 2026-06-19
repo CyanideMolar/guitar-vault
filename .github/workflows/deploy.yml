@@ -34,5 +34,5 @@ jobs:
             -e "ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no" \
             ./ $EC2_USER@$EC2_HOST:/home/ec2-user/guitar-vault/
           ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no \
-            $EC2_USER@$EC2_HOST "pm2 restart guitar-vault"
+            $EC2_USER@$EC2_HOST "cd ~/guitar-vault && npm rebuild && pm2 restart guitar-vault"
           rm /tmp/deploy_key
