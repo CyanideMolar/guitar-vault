@@ -8,7 +8,6 @@ export async function GET() {
 
   const guitars = await prisma.guitar.findMany({
     where: { ownerId: session.user.id },
-    include: { customFieldValues: { include: { customField: true } } },
     orderBy: { sortOrder: 'asc' },
   })
 
@@ -38,10 +37,6 @@ export async function GET() {
 
     for (const [label, value] of fields) {
       if (value) lines.push(`- **${label}:** ${value}`)
-    }
-
-    for (const cfv of guitar.customFieldValues) {
-      if (cfv.value) lines.push(`- **${cfv.customField.label}:** ${cfv.value}`)
     }
 
     if (guitar.notes) {

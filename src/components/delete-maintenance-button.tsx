@@ -18,7 +18,7 @@ export function DeleteMaintenanceButton({ guitarId, recordId }: { guitarId: stri
   if (confirming) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-500">Delete?</span>
+        <span className="text-xs text-gray-500 dark:text-slate-400">Delete?</span>
         <button
           onClick={handleDelete}
           disabled={deleting}
@@ -28,7 +28,7 @@ export function DeleteMaintenanceButton({ guitarId, recordId }: { guitarId: stri
         </button>
         <button
           onClick={() => setConfirming(false)}
-          className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
+          className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
         >
           No
         </button>
@@ -39,7 +39,7 @@ export function DeleteMaintenanceButton({ guitarId, recordId }: { guitarId: stri
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+      className="rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950 dark:hover:text-red-400"
       title="Delete record"
     >
       <Trash2 className="h-3.5 w-3.5" />

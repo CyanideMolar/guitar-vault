@@ -17,7 +17,6 @@ export default async function GuitarDetailPage({ params }: { params: Promise<{ i
   const guitar = await prisma.guitar.findFirst({
     where: { id, ownerId: session.user.id },
     include: {
-      customFieldValues: { include: { customField: true } },
       maintenanceRecords: {
         include: { user: { select: { name: true } } },
         orderBy: { date: 'desc' },
@@ -43,16 +42,16 @@ export default async function GuitarDetailPage({ params }: { params: Promise<{ i
       {/* Breadcrumb + actions */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Link href="/guitars" className="text-sm text-gray-500 hover:text-gray-700">
+          <Link href="/guitars" className="text-sm text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200">
             Collection
           </Link>
-          <span className="text-gray-300">/</span>
-          <span className="truncate text-sm font-medium text-gray-900">{guitar.name}</span>
+          <span className="text-gray-300 dark:text-slate-600">/</span>
+          <span className="truncate text-sm font-medium text-gray-900 dark:text-slate-100">{guitar.name}</span>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href={`/guitars/${guitar.id}/edit`}
-            className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+            className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
           >
             <Edit className="h-3.5 w-3.5" /> Edit
           </Link>
@@ -60,42 +59,34 @@ export default async function GuitarDetailPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        {/* Header — stacks vertically on mobile */}
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        {/* Header */}
         <div className="flex flex-col gap-4 p-4 sm:flex-row sm:gap-6 sm:p-6">
-          <div className="flex aspect-[3/4] w-full flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 sm:w-56">
+          <div className="flex aspect-[3/4] w-full flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 dark:bg-slate-700 sm:w-56">
             {guitar.imageUrl ? (
               <ImageLightbox src={guitar.imageUrl} alt={guitar.name} />
             ) : (
-              <Guitar className="h-12 w-12 text-gray-300" />
+              <Guitar className="h-12 w-12 text-gray-300 dark:text-slate-600" />
             )}
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{guitar.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{guitar.name}</h1>
             {(guitar.brand || guitar.model) && (
-              <p className="mt-1 text-gray-500">
+              <p className="mt-1 text-gray-500 dark:text-slate-400">
                 {[guitar.brand, guitar.model].filter(Boolean).join(' · ')}
               </p>
             )}
-            {guitar.notes && <p className="mt-3 text-sm text-gray-600">{guitar.notes}</p>}
+            {guitar.notes && <p className="mt-3 text-sm text-gray-600 dark:text-slate-400">{guitar.notes}</p>}
           </div>
         </div>
 
         {/* Core details */}
-        <div className="border-t border-gray-100 px-4 py-4 sm:px-6">
+        <div className="border-t border-gray-100 px-4 py-4 dark:border-slate-700 sm:px-6">
           <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             {details.filter((d) => d.value).map((d) => (
               <div key={d.label}>
-                <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">{d.label}</dt>
-                <dd className="mt-0.5 text-sm text-gray-900">{d.value}</dd>
-              </div>
-            ))}
-            {guitar.customFieldValues.map((cfv) => (
-              <div key={cfv.id}>
-                <dt className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                  {cfv.customField.label}
-                </dt>
-                <dd className="mt-0.5 text-sm text-gray-900">{cfv.value}</dd>
+                <dt className="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-slate-500">{d.label}</dt>
+                <dd className="mt-0.5 text-sm text-gray-900 dark:text-slate-100">{d.value}</dd>
               </div>
             ))}
           </dl>
@@ -105,41 +96,41 @@ export default async function GuitarDetailPage({ params }: { params: Promise<{ i
       {/* Maintenance */}
       <div className="mt-8">
         <div className="mb-4 flex items-center justify-between gap-2">
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-            <Wrench className="h-5 w-5 text-gray-400" /> Maintenance History
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-slate-100">
+            <Wrench className="h-5 w-5 text-gray-400 dark:text-slate-500" /> Maintenance History
           </h2>
           <AddMaintenanceModal guitarId={guitar.id} />
         </div>
 
         {guitar.maintenanceRecords.length === 0 ? (
-          <div className="rounded-xl border-2 border-dashed border-gray-200 py-12 text-center text-gray-400">
+          <div className="rounded-xl border-2 border-dashed border-gray-200 py-12 text-center text-gray-400 dark:border-slate-700 dark:text-slate-500">
             No maintenance records yet.
           </div>
         ) : (
           <div className="space-y-3">
             {guitar.maintenanceRecords.map((record) => (
-              <div key={record.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <div key={record.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap gap-1">
                       {record.taskType.split(',').map((t) => t.trim()).filter(Boolean).map((task) => (
-                        <span key={task} className="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+                        <span key={task} className="inline-flex rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-800 dark:bg-blue-900/50 dark:text-blue-300">
                           {task}
                         </span>
                       ))}
                     </div>
                     {record.notes && (
-                      <p className="mt-2 text-sm text-gray-700">{record.notes}</p>
+                      <p className="mt-2 text-sm text-gray-700 dark:text-slate-300">{record.notes}</p>
                     )}
                     {record.performedBy && (
-                      <p className="mt-1 text-xs text-gray-400">By: {record.performedBy}</p>
+                      <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">By: {record.performedBy}</p>
                     )}
                   </div>
                   <div className="flex flex-shrink-0 items-start gap-1">
                     <div className="mr-1 text-right text-sm">
-                      <div className="font-medium text-gray-700">{formatDate(record.date)}</div>
+                      <div className="font-medium text-gray-700 dark:text-slate-300">{formatDate(record.date)}</div>
                       {record.cost != null && (
-                        <div className="text-gray-400">{formatCurrency(record.cost)}</div>
+                        <div className="text-gray-400 dark:text-slate-500">{formatCurrency(record.cost)}</div>
                       )}
                     </div>
                     <AddMaintenanceModal guitarId={guitar.id} record={record} />

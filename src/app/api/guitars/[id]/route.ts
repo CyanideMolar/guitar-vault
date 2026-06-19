@@ -3,9 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 async function getGuitarForUser(id: string, userId: string) {
-  return prisma.guitar.findFirst({
-    where: { id, ownerId: userId },
-  })
+  return prisma.guitar.findFirst({ where: { id, ownerId: userId } })
 }
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -18,7 +16,6 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const guitar = await prisma.guitar.findFirst({
     where: { id, ownerId: session.user.id },
     include: {
-      customFieldValues: { include: { customField: true } },
       maintenanceRecords: {
         include: { user: { select: { name: true, email: true } } },
         orderBy: { date: 'desc' },
@@ -41,35 +38,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const body = await req.json()
-  const { name, brand, model, serialNumber, bridgePickup, neckPickup, middlePickup, preferredTuning, preferredStringGauge, imageUrl, notes, customFields } = body
+  const { name, brand, model, serialNumber, bridgePickup, neckPickup, middlePickup, preferredTuning, preferredStringGauge, imageUrl, notes } = body
 
   const guitar = await prisma.guitar.update({
     where: { id },
-    data: {
-      name,
-      brand,
-      model,
-      serialNumber,
-      bridgePickup,
-      neckPickup,
-      middlePickup,
-      preferredTuning,
-      preferredStringGauge,
-      imageUrl,
-      notes,
-      customFieldValues: customFields
-        ? {
-            upsert: Object.entries(customFields as Record<string, string>).map(
-              ([customFieldId, value]) => ({
-                where: { guitarId_customFieldId: { guitarId: id, customFieldId } },
-                update: { value },
-                create: { customFieldId, value },
-              })
-            ),
-          }
-        : undefined,
-    },
-    include: { customFieldValues: { include: { customField: true } } },
+    data: { name, brand, model, serialNumber, bridgePickup, neckPickup, middlePickup, preferredTuning, preferredStringGauge, imageUrl, notes },
   })
 
   return NextResponse.json(guitar)

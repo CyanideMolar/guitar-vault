@@ -10,10 +10,7 @@ export async function GET() {
 
   const guitars = await prisma.guitar.findMany({
     where: { ownerId: session.user.id },
-    include: {
-      customFieldValues: { include: { customField: true } },
-      _count: { select: { maintenanceRecords: true } },
-    },
+    include: { _count: { select: { maintenanceRecords: true } } },
     orderBy: { sortOrder: 'asc' },
   })
 
@@ -27,7 +24,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json()
-  const { name, brand, model, serialNumber, bridgePickup, neckPickup, middlePickup, preferredTuning, preferredStringGauge, imageUrl, notes, customFields } = body
+  const { name, brand, model, serialNumber, bridgePickup, neckPickup, middlePickup, preferredTuning, preferredStringGauge, imageUrl, notes } = body
 
   if (!name) {
     return NextResponse.json({ error: 'Name is required' }, { status: 400 })
@@ -41,28 +38,10 @@ export async function POST(req: NextRequest) {
 
   const guitar = await prisma.guitar.create({
     data: {
-      name,
-      brand,
-      model,
-      serialNumber,
-      bridgePickup,
-      neckPickup,
-      middlePickup,
-      preferredTuning,
-      preferredStringGauge,
-      imageUrl,
-      notes,
-      sortOrder,
+      name, brand, model, serialNumber, bridgePickup, neckPickup, middlePickup,
+      preferredTuning, preferredStringGauge, imageUrl, notes, sortOrder,
       ownerId: session.user.id,
-      customFieldValues: customFields
-        ? {
-            create: Object.entries(customFields as Record<string, string>)
-              .filter(([, value]) => value !== '')
-              .map(([customFieldId, value]) => ({ customFieldId, value })),
-          }
-        : undefined,
     },
-    include: { customFieldValues: { include: { customField: true } } },
   })
 
   return NextResponse.json(guitar, { status: 201 })

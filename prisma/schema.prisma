@@ -43,41 +43,9 @@ model Guitar {
   notes                String?
   ownerId              String
   owner                User                 @relation(fields: [ownerId], references: [id])
-  customFieldValues    CustomFieldValue[]
   maintenanceRecords   MaintenanceRecord[]
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
-}
-
-model CustomField {
-  id        String             @id @default(cuid())
-  label     String
-  fieldType FieldType          @default(TEXT)
-  options   String?
-  required  Boolean            @default(false)
-  sortOrder Int                @default(0)
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
-  values    CustomFieldValue[]
-}
-
-enum FieldType {
-  TEXT
-  NUMBER
-  SELECT
-  BOOLEAN
-  DATE
-}
-
-model CustomFieldValue {
-  id            String      @id @default(cuid())
-  guitarId      String
-  guitar        Guitar      @relation(fields: [guitarId], references: [id], onDelete: Cascade)
-  customFieldId String
-  customField   CustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
-  value         String
-
-  @@unique([guitarId, customFieldId])
 }
 
 model MaintenanceRecord {
@@ -93,6 +61,12 @@ model MaintenanceRecord {
   performedBy String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model AllowedEmail {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
 }
 
 // NextAuth.js models

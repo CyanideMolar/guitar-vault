@@ -19,7 +19,7 @@ export function DeleteGuitarButton({ id, name }: { id: string; name: string }) {
   if (confirming) {
     return (
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-gray-600">Delete?</span>
+        <span className="text-sm text-gray-600 dark:text-slate-400">Delete?</span>
         <button
           onClick={handleDelete}
           disabled={deleting}
@@ -29,7 +29,7 @@ export function DeleteGuitarButton({ id, name }: { id: string; name: string }) {
         </button>
         <button
           onClick={() => setConfirming(false)}
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
         >
           Cancel
         </button>
@@ -40,7 +40,7 @@ export function DeleteGuitarButton({ id, name }: { id: string; name: string }) {
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+      className="flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
     >
       <Trash2 className="h-3.5 w-3.5" /> Delete
     </button>

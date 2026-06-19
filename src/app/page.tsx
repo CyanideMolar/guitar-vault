@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { auth, signIn } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { Guitar, Plus, Wrench, Settings } from 'lucide-react'
+import { Guitar, Plus, ShieldCheck, Wrench } from 'lucide-react'
 
 export default async function Home() {
   const session = await auth()
@@ -9,9 +9,9 @@ export default async function Home() {
   if (!session) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
-        <Guitar className="mb-4 h-16 w-16 text-amber-600" />
-        <h1 className="text-4xl font-bold text-gray-900">Guitar Vault</h1>
-        <p className="mt-3 text-lg text-gray-500">
+        <Guitar className="mb-4 h-16 w-16 text-sky-600" />
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-slate-100">Guitar Vault</h1>
+        <p className="mt-3 text-lg text-gray-500 dark:text-slate-400">
           Track your collection, manage maintenance, and keep your gear in top shape.
         </p>
         <form action={async () => {
@@ -20,7 +20,7 @@ export default async function Home() {
         }}>
           <button
             type="submit"
-            className="mt-8 rounded-lg bg-amber-600 px-6 py-3 text-base font-semibold text-white hover:bg-amber-700"
+            className="mt-8 rounded-lg bg-sky-100 px-6 py-3 text-base font-semibold text-sky-800 hover:bg-sky-200 dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/70"
           >
             Sign in with Google
           </button>
@@ -35,59 +35,58 @@ export default async function Home() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
           Welcome back, {session.user?.name?.split(' ')[0]}
         </h1>
-        <p className="mt-1 text-gray-500">What would you like to do today?</p>
+        <p className="mt-1 text-gray-500 dark:text-slate-400">What would you like to do today?</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className={`grid gap-4 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
         <Link
           href="/guitars"
-          className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+          className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
         >
-          <div className="rounded-lg bg-amber-100 p-2">
-            <Guitar className="h-6 w-6 text-amber-700" />
+          <div className="rounded-lg bg-sky-100 p-2 dark:bg-blue-900/50">
+            <Guitar className="h-6 w-6 text-sky-700 dark:text-blue-400" />
           </div>
           <div>
-            <h2 className="font-semibold text-gray-900">My Collection</h2>
-            <p className="mt-1 text-sm text-gray-500">Browse and manage your guitars</p>
+            <h2 className="font-semibold text-gray-900 dark:text-slate-100">My Collection</h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Browse and manage your guitars</p>
           </div>
         </Link>
 
         <Link
           href="/guitars/new"
-          className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+          className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
         >
-          <div className="rounded-lg bg-green-100 p-2">
-            <Plus className="h-6 w-6 text-green-700" />
+          <div className="rounded-lg bg-green-100 p-2 dark:bg-green-900/50">
+            <Plus className="h-6 w-6 text-green-700 dark:text-green-400" />
           </div>
           <div>
-            <h2 className="font-semibold text-gray-900">Add Guitar</h2>
-            <p className="mt-1 text-sm text-gray-500">Add a new guitar to your collection</p>
+            <h2 className="font-semibold text-gray-900 dark:text-slate-100">Add Guitar</h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Add a new guitar to your collection</p>
           </div>
         </Link>
-
         {isAdmin && (
           <Link
-            href="/admin/fields"
-            className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+            href="/admin/access"
+            className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
           >
-            <div className="rounded-lg bg-blue-100 p-2">
-              <Settings className="h-6 w-6 text-blue-700" />
+            <div className="rounded-lg bg-sky-100 p-2 dark:bg-blue-900/50">
+              <ShieldCheck className="h-6 w-6 text-sky-700 dark:text-blue-400" />
             </div>
             <div>
-              <h2 className="font-semibold text-gray-900">Custom Fields</h2>
-              <p className="mt-1 text-sm text-gray-500">Add fields to guitar profiles</p>
+              <h2 className="font-semibold text-gray-900 dark:text-slate-100">Access Control</h2>
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Manage who can sign in</p>
             </div>
           </Link>
         )}
       </div>
 
-      <div className="mt-8 rounded-xl border border-amber-100 bg-amber-50 p-4">
+      <div className="mt-8 rounded-xl border border-sky-100 bg-sky-50 p-4 dark:border-blue-900 dark:bg-blue-950/30">
         <div className="flex items-center gap-2">
-          <Wrench className="h-4 w-4 text-amber-700" />
-          <p className="text-sm font-medium text-amber-800">
+          <Wrench className="h-4 w-4 text-sky-700 dark:text-blue-400" />
+          <p className="text-sm font-medium text-sky-800 dark:text-blue-300">
             Tip: Open any guitar and tap &ldquo;Add Maintenance&rdquo; to log a service record.
           </p>
         </div>
