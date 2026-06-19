@@ -31,8 +31,16 @@ jobs:
             --exclude='.env.local' \
             --exclude='prisma/dev.db' \
             --exclude='public/uploads' \
+            --exclude='node_modules' \
             -e "ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no" \
             ./ $EC2_USER@$EC2_HOST:/home/ec2-user/guitar-vault/
           ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no \
-            $EC2_USER@$EC2_HOST "cd ~/guitar-vault && npm rebuild && pm2 restart guitar-vault"
+            $EC2_USER@$EC2_HOST "cd ~/guitar-vault && \
+              new=\$(md5sum package-lock.json | cut -d' ' -f1) && \
+              old=\$(cat .pkg-lock-hash 2>/dev/null || echo '') && \
+              if [ \"\$new\" != \"\$old\" ]; then \
+                npm ci && echo \"\$new\" > .pkg-lock-hash; \
+              fi && \
+              npm rebuild && \
+              pm2 restart guitar-vault"
           rm /tmp/deploy_key
