@@ -48,14 +48,22 @@ export function GuitarForm({ initialData }: GuitarFormProps) {
     const file = e.target.files?.[0]
     if (!file) return
     setUploading(true)
+    setError('')
     try {
       const fd = new FormData()
       fd.append('file', file)
       const res = await fetch('/api/upload', { method: 'POST', body: fd })
       const data = await res.json()
-      if (data.url) setForm((f) => ({ ...f, imageUrl: data.url }))
+      if (data.url) {
+        setForm((f) => ({ ...f, imageUrl: data.url }))
+      } else {
+        setError(data.error ?? 'Upload failed')
+      }
+    } catch {
+      setError('Upload failed — check your connection')
     } finally {
       setUploading(false)
+      if (fileRef.current) fileRef.current.value = ''
     }
   }
 

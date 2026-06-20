@@ -14,8 +14,15 @@ export async function POST(req: NextRequest) {
 
   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
 
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-  if (!allowedTypes.includes(file.type)) {
+  const extMap: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+    'image/heic': 'heic',
+    'image/heif': 'heif',
+  }
+  if (!extMap[file.type]) {
     return NextResponse.json({ error: 'Invalid file type' }, { status: 400 })
   }
 
@@ -25,7 +32,7 @@ export async function POST(req: NextRequest) {
 
   const bytes = await file.arrayBuffer()
   const buffer = Buffer.from(bytes)
-  const ext = file.name.split('.').pop()
+  const ext = extMap[file.type]
   const filename = `${session.user.id}-${Date.now()}.${ext}`
   const uploadDir = process.env.UPLOAD_DIR ?? path.join(process.cwd(), 'public', 'uploads')
   const uploadPath = path.join(uploadDir, filename)
