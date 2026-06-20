@@ -48,7 +48,7 @@ Sign in with Google, then run:
 npm run seed
 ```
 
-This promotes the first user account to ADMIN, which unlocks the custom fields manager.
+This promotes the first user account to ADMIN.
 
 ## Features
 
