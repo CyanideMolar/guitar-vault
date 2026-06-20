@@ -57,4 +57,3 @@ This promotes the first user account to ADMIN, which unlocks the custom fields m
 - Drag-and-drop reordering
 - Maintenance record tracking
 - Markdown export for use with AI tools
-- Admin-managed custom fields
