@@ -2,52 +2,28 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, Pencil, X } from 'lucide-react'
+import { Wrench, X } from 'lucide-react'
 import { MAINTENANCE_TASKS } from '@/lib/maintenance-tasks'
 
-type MaintenanceRecord = {
-  id: string
-  taskType: string
-  date: Date
-  notes?: string | null
-  cost?: number | null
-  performedBy?: string | null
-}
+type Guitar = { id: string; name: string; brand?: string | null; model?: string | null }
 
-type Props =
-  | { guitarId: string; record?: undefined; userName?: string | null }
-  | { guitarId: string; record: MaintenanceRecord; userName?: string | null }
-
-function parseTasks(taskType: string): string[] {
-  return taskType.split(',').map((t) => t.trim()).filter(Boolean)
-}
-
-export function AddMaintenanceModal({ guitarId, record, userName }: Props) {
+export function QuickMaintenanceModal({ guitars, userName }: { guitars: Guitar[]; userName?: string | null }) {
   const router = useRouter()
-  const isEdit = !!record
-
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [selectedTasks, setSelectedTasks] = useState<string[]>(
-    record ? parseTasks(record.taskType) : []
-  )
+  const [selectedGuitarId, setSelectedGuitarId] = useState('')
+  const [selectedTasks, setSelectedTasks] = useState<string[]>([])
   const [form, setForm] = useState({
-    date: record ? new Date(record.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-    notes: record?.notes ?? '',
-    cost: record?.cost != null ? String(record.cost) : '',
-    performedBy: record?.performedBy ?? userName ?? '',
+    date: new Date().toISOString().split('T')[0],
+    notes: '',
+    cost: '',
+    performedBy: userName ?? '',
   })
 
   function openModal() {
-    if (isEdit) {
-      setSelectedTasks(parseTasks(record.taskType))
-      setForm({
-        date: new Date(record.date).toISOString().split('T')[0],
-        notes: record.notes ?? '',
-        cost: record.cost != null ? String(record.cost) : '',
-        performedBy: record.performedBy ?? '',
-      })
-    }
+    setSelectedGuitarId(guitars.length === 1 ? guitars[0].id : '')
+    setSelectedTasks([])
+    setForm({ date: new Date().toISOString().split('T')[0], notes: '', cost: '', performedBy: userName ?? '' })
     setOpen(true)
   }
 
@@ -59,22 +35,15 @@ export function AddMaintenanceModal({ guitarId, record, userName }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (selectedTasks.length === 0) return
+    if (!selectedGuitarId || selectedTasks.length === 0) return
     setSaving(true)
     try {
-      const url = isEdit
-        ? `/api/guitars/${guitarId}/maintenance/${record.id}`
-        : `/api/guitars/${guitarId}/maintenance`
-      await fetch(url, {
-        method: isEdit ? 'PUT' : 'POST',
+      await fetch(`/api/guitars/${selectedGuitarId}/maintenance`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, taskType: selectedTasks.join(', ') }),
       })
       setOpen(false)
-      if (!isEdit) {
-        setSelectedTasks([])
-        setForm({ date: new Date().toISOString().split('T')[0], notes: '', cost: '', performedBy: '' })
-      }
       router.refresh()
     } finally {
       setSaving(false)
@@ -83,32 +52,31 @@ export function AddMaintenanceModal({ guitarId, record, userName }: Props) {
 
   const inputCls = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:placeholder-slate-400'
 
+  const guitarLabel = (g: Guitar) =>
+    [g.name, [g.brand, g.model].filter(Boolean).join(' ')].filter(Boolean).join(' — ')
+
+  const canSubmit = !!selectedGuitarId && selectedTasks.length > 0
+
   return (
     <>
-      {isEdit ? (
-        <button
-          onClick={openModal}
-          className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
-          title="Edit record"
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </button>
-      ) : (
-        <button
-          onClick={openModal}
-          className="flex items-center gap-2 rounded-lg bg-sky-100 px-4 py-2 text-sm font-medium text-sky-800 hover:bg-sky-200 dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/70"
-        >
-          <Plus className="h-4 w-4" /> Add Maintenance
-        </button>
-      )}
+      <button
+        onClick={openModal}
+        className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800 text-left w-full"
+      >
+        <div className="rounded-lg bg-amber-100 p-2 dark:bg-amber-900/50 flex-shrink-0">
+          <Wrench className="h-6 w-6 text-amber-700 dark:text-amber-400" />
+        </div>
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-slate-100">Log Maintenance</h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Record a maintenance task for any guitar</p>
+        </div>
+      </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="flex max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-xl bg-white shadow-xl dark:bg-slate-800">
             <div className="flex items-center justify-between border-b border-gray-200 p-5 dark:border-slate-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">
-                {isEdit ? 'Edit Maintenance Record' : 'Log Maintenance'}
-              </h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-slate-100">Log Maintenance</h2>
               <button onClick={() => setOpen(false)} className="rounded-md p-1 hover:bg-gray-100 dark:hover:bg-slate-700">
                 <X className="h-5 w-5 text-gray-500 dark:text-slate-400" />
               </button>
@@ -117,9 +85,24 @@ export function AddMaintenanceModal({ guitarId, record, userName }: Props) {
             <form onSubmit={handleSubmit} className="overflow-y-auto p-5">
               <div className="space-y-4">
                 <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">Guitar *</label>
+                  <select
+                    value={selectedGuitarId}
+                    onChange={(e) => setSelectedGuitarId(e.target.value)}
+                    required
+                    className={inputCls}
+                  >
+                    <option value="">Select a guitar…</option>
+                    {guitars.map((g) => (
+                      <option key={g.id} value={g.id}>{guitarLabel(g)}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
                   <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-slate-300">
-                    Tasks * {selectedTasks.length > 0 && (
-                      <span className="font-normal text-gray-400 dark:text-slate-500">({selectedTasks.length} selected)</span>
+                    Tasks *{selectedTasks.length > 0 && (
+                      <span className="font-normal text-gray-400 dark:text-slate-500"> ({selectedTasks.length} selected)</span>
                     )}
                   </label>
                   <div className="max-h-44 overflow-y-auto rounded-lg border border-gray-200 divide-y divide-gray-100 dark:border-slate-600 dark:divide-slate-700">
@@ -174,10 +157,10 @@ export function AddMaintenanceModal({ guitarId, record, userName }: Props) {
               <div className="mt-5 flex gap-3">
                 <button
                   type="submit"
-                  disabled={saving || selectedTasks.length === 0}
+                  disabled={saving || !canSubmit}
                   className="flex-1 rounded-lg bg-sky-100 py-2 text-sm font-medium text-sky-800 hover:bg-sky-200 disabled:opacity-50 dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/70"
                 >
-                  {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Save Record'}
+                  {saving ? 'Saving…' : 'Save Record'}
                 </button>
                 <button
                   type="button"

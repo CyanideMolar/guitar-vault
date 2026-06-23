@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import { auth, signIn } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { Guitar, Plus, ShieldCheck, Wrench } from 'lucide-react'
+import { Guitar, Plus, ShieldCheck } from 'lucide-react'
+import { QuickMaintenanceModal } from '@/components/quick-maintenance-modal'
 
 export default async function Home() {
   const session = await auth()
@@ -29,7 +30,14 @@ export default async function Home() {
     )
   }
 
-  const user = await prisma.user.findUnique({ where: { id: session.user!.id } })
+  const [user, guitars] = await Promise.all([
+    prisma.user.findUnique({ where: { id: session.user!.id } }),
+    prisma.guitar.findMany({
+      where: { ownerId: session.user!.id },
+      select: { id: true, name: true, brand: true, model: true },
+      orderBy: { sortOrder: 'asc' },
+    }),
+  ])
   const isAdmin = user?.role === 'ADMIN'
 
   return (
@@ -41,7 +49,7 @@ export default async function Home() {
         <p className="mt-1 text-gray-500 dark:text-slate-400">What would you like to do today?</p>
       </div>
 
-      <div className={`grid gap-4 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+      <div className={`grid gap-4 ${isAdmin ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3'}`}>
         <Link
           href="/guitars"
           className="flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
@@ -67,6 +75,8 @@ export default async function Home() {
             <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Add a new guitar to your collection</p>
           </div>
         </Link>
+        <QuickMaintenanceModal guitars={guitars} userName={session.user?.name} />
+
         {isAdmin && (
           <Link
             href="/admin/access"
@@ -83,14 +93,7 @@ export default async function Home() {
         )}
       </div>
 
-      <div className="mt-8 rounded-xl border border-sky-100 bg-sky-50 p-4 dark:border-blue-900 dark:bg-blue-950/30">
-        <div className="flex items-center gap-2">
-          <Wrench className="h-4 w-4 text-sky-700 dark:text-blue-400" />
-          <p className="text-sm font-medium text-sky-800 dark:text-blue-300">
-            Tip: Open any guitar and tap &ldquo;Add Maintenance&rdquo; to log a service record.
-          </p>
-        </div>
-      </div>
+
     </div>
   )
 }
