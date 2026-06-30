@@ -9,6 +9,38 @@ import { ImageLightbox } from '@/components/image-lightbox'
 import { AddMaintenanceModal } from '@/components/add-maintenance-modal'
 import { MaintenanceRecordModal } from '@/components/maintenance-record-modal'
 
+function FormattedNotes({ text, className }: { text: string; className?: string }) {
+  const URL_RE = /(https?:\/\/[^\s]+)/g
+  const lines = text.split('\n')
+  return (
+    <p className={className}>
+      {lines.map((line, lineIdx) => {
+        const parts = line.split(URL_RE)
+        return (
+          <span key={lineIdx}>
+            {lineIdx > 0 && <br />}
+            {parts.map((part, partIdx) =>
+              /^https?:\/\//.test(part) ? (
+                <a
+                  key={partIdx}
+                  href={part}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  {part}
+                </a>
+              ) : (
+                <span key={partIdx}>{part}</span>
+              )
+            )}
+          </span>
+        )
+      })}
+    </p>
+  )
+}
+
 export default async function GuitarDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
   if (!session?.user?.id) redirect('/')
@@ -76,7 +108,7 @@ export default async function GuitarDetailPage({ params }: { params: Promise<{ i
                 {[guitar.brand, guitar.model].filter(Boolean).join(' · ')}
               </p>
             )}
-            {guitar.notes && <p className="mt-3 text-sm text-gray-600 dark:text-slate-400">{guitar.notes}</p>}
+            {guitar.notes && <FormattedNotes text={guitar.notes} className="mt-3 text-sm text-gray-600 dark:text-slate-400" />}
           </div>
         </div>
 
