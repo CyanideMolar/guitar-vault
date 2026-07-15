@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getUserIdFromRequest } from '@/lib/device-auth'
 
-export async function GET() {
-  const session = await auth()
-  if (!session?.user?.id) {
+export async function GET(req: NextRequest) {
+  const userId = await getUserIdFromRequest(req)
+  if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const guitars = await prisma.guitar.findMany({
-    where: { ownerId: session.user.id },
+    where: { ownerId: userId },
     include: { _count: { select: { maintenanceRecords: true } } },
     orderBy: { sortOrder: 'asc' },
   })
