@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
-import sharp from 'sharp'
+import type sharpType from 'sharp'
 import { prisma } from '@/lib/prisma'
+
+// A plain top-level `import sharp from 'sharp'` gets caught by Turbopack's
+// external-module handling for this native package, which -- confirmed
+// against this project's actual production deploy -- generates a runtime
+// reference (`sharp-<hash>`) that fails to resolve even on a from-scratch,
+// architecture-matched build (ERR_MODULE_NOT_FOUND), despite `sharp` itself
+// installing and loading correctly via a plain `require('sharp')` on the
+// same box. Routing the require through `eval` hides it from static bundler
+// analysis entirely, forcing real Node module resolution at runtime instead.
+const sharp: typeof sharpType = eval('require')('sharp')
 
 // Deliberately unauthenticated -- matches the existing precedent that
 // imageUrl files under /uploads/ are already served by nginx with zero
