@@ -28,8 +28,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const inputPath = path.join(uploadDir, filename)
 
   try {
+    // 120x120 -- matches the Musician Dial's actual on-screen display size
+    // exactly, so the firmware can draw it 1:1 with no client-side scaling.
+    // (LVGL's scaled-image draw path has a real bug that divides by zero
+    // under certain clip conditions; unscaled 1:1 draws don't go through it.)
     const thumbnail = await sharp(inputPath)
-      .resize(200, 200, { fit: 'cover' })
+      .resize(120, 120, { fit: 'cover' })
       .jpeg({ quality: 80 })
       .toBuffer()
 
