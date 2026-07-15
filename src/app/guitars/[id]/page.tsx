@@ -2,12 +2,13 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { Guitar, Edit, Wrench } from 'lucide-react'
-import { formatDate, formatCurrency } from '@/lib/utils'
+import { Guitar, Edit, Wrench, Timer } from 'lucide-react'
+import { formatDate, formatCurrency, formatDuration, RATING_LABELS } from '@/lib/utils'
 import { DeleteGuitarButton } from '@/components/delete-guitar-button'
 import { ImageLightbox } from '@/components/image-lightbox'
 import { AddMaintenanceModal } from '@/components/add-maintenance-modal'
 import { MaintenanceRecordModal } from '@/components/maintenance-record-modal'
+import { AddPracticeSessionModal } from '@/components/add-practice-session-modal'
 
 function FormattedNotes({ text, className }: { text: string; className?: string }) {
   const URL_RE = /(https?:\/\/[^\s]+)/g
@@ -46,15 +47,27 @@ export default async function GuitarDetailPage({ params }: { params: Promise<{ i
   if (!session?.user?.id) redirect('/')
 
   const { id } = await params
-  const guitar = await prisma.guitar.findFirst({
-    where: { id, ownerId: session.user.id },
-    include: {
-      maintenanceRecords: {
-        include: { user: { select: { name: true } } },
-        orderBy: { date: 'desc' },
+  const [guitar, practiceSessions] = await Promise.all([
+    prisma.guitar.findFirst({
+      where: { id, ownerId: session.user.id },
+      include: {
+        maintenanceRecords: {
+          include: { user: { select: { name: true } } },
+          orderBy: { date: 'desc' },
+        },
       },
-    },
-  })
+    }),
+    prisma.practiceSession.findMany({
+      where: { userId: session.user.id, segments: { some: { guitarId: id } } },
+      include: {
+        segments: {
+          include: { guitar: { select: { id: true, name: true, imageUrl: true } } },
+          orderBy: { order: 'asc' },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
+  ])
 
   if (!guitar) notFound()
 
@@ -174,6 +187,47 @@ export default async function GuitarDetailPage({ params }: { params: Promise<{ i
                   </div>
                 }
               />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Practice Sessions */}
+      <div className="mt-8">
+        <div className="mb-4 flex items-center justify-between gap-2">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-slate-100">
+            <Timer className="h-5 w-5 text-gray-400 dark:text-slate-500" /> Practice Sessions
+          </h2>
+          <AddPracticeSessionModal guitarId={guitar.id} />
+        </div>
+
+        {practiceSessions.length === 0 ? (
+          <div className="rounded-xl border-2 border-dashed border-gray-200 py-12 text-center text-gray-400 dark:border-slate-700 dark:text-slate-500">
+            No practice sessions logged yet.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {practiceSessions.map((practiceSession) => (
+              <Link
+                key={practiceSession.id}
+                href={`/practice-sessions/${practiceSession.id}`}
+                className="block rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-gray-600 dark:text-slate-400">
+                      {RATING_LABELS[practiceSession.rating]}
+                      {practiceSession.segments.length > 1 && (
+                        <span className="text-xs text-gray-400 dark:text-slate-500"> · spans {practiceSession.segments.length} guitars</span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex-shrink-0 text-right text-sm">
+                    <div className="font-medium text-gray-700 dark:text-slate-300">{formatDuration(practiceSession.totalDurationSeconds)}</div>
+                    <div className="text-gray-400 dark:text-slate-500">{formatDate(practiceSession.createdAt)}</div>
+                  </div>
+                </div>
+              </Link>
             ))}
           </div>
         )}

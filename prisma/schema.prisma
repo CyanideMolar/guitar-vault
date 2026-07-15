@@ -18,6 +18,9 @@ model User {
   updatedAt          DateTime            @updatedAt
   guitars            Guitar[]
   maintenanceRecords MaintenanceRecord[]
+  practiceSessions   PracticeSession[]
+  apiKeys            ApiKey[]
+  pairingRequests    PairingRequest[]
   accounts           Account[]
   sessions           Session[]
 }
@@ -44,6 +47,7 @@ model Guitar {
   ownerId              String
   owner                User                 @relation(fields: [ownerId], references: [id])
   maintenanceRecords   MaintenanceRecord[]
+  practiceSessionSegments PracticeSessionGuitar[]
   createdAt            DateTime             @default(now())
   updatedAt            DateTime             @updatedAt
 }
@@ -61,6 +65,51 @@ model MaintenanceRecord {
   performedBy String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model PracticeSession {
+  id                   String                  @id @default(cuid())
+  userId               String
+  user                 User                    @relation(fields: [userId], references: [id])
+  createdAt            DateTime                @default(now())
+  totalDurationSeconds Int
+  rating               Int
+  segments             PracticeSessionGuitar[]
+}
+
+model PracticeSessionGuitar {
+  id                String          @id @default(cuid())
+  practiceSessionId String
+  practiceSession   PracticeSession @relation(fields: [practiceSessionId], references: [id], onDelete: Cascade)
+  guitarId          String
+  guitar            Guitar          @relation(fields: [guitarId], references: [id], onDelete: Cascade)
+  durationSeconds   Int
+  order             Int
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hashedKey  String    @unique
+  label      String?
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  pairingRequest PairingRequest?
+}
+
+model PairingRequest {
+  id           String    @id @default(cuid())
+  code         String    @unique
+  status       String    @default("PENDING")
+  userId       String?
+  user         User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiKeyId     String?   @unique
+  apiKey       ApiKey?   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  plaintextKey String?
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime
 }
 
 model AllowedEmail {

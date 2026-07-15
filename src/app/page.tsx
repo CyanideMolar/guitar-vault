@@ -3,6 +3,7 @@ import { auth, signIn } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Guitar, Plus, ShieldCheck } from 'lucide-react'
 import { QuickMaintenanceModal } from '@/components/quick-maintenance-modal'
+import { LogPracticeSessionModal } from '@/components/log-practice-session-modal'
 
 export default async function Home() {
   const session = await auth()
@@ -76,6 +77,7 @@ export default async function Home() {
           </div>
         </Link>
         <QuickMaintenanceModal guitars={guitars} userName={session.user?.name} />
+        <LogPracticeSessionModal guitars={guitars} />
 
         {isAdmin && (
           <Link

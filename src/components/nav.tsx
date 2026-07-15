@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useSession, signIn, signOut } from 'next-auth/react'
-import { Guitar, LogOut, ShieldCheck, User, Wrench } from 'lucide-react'
+import { Guitar, LogOut, ShieldCheck, Timer, User, Wrench } from 'lucide-react'
 import { Avatar, AvatarImage, AvatarFallback } from '@radix-ui/react-avatar'
 import { ThemeToggle } from '@/components/theme-toggle'
 
@@ -33,6 +33,11 @@ export function Nav() {
                 <Link href="/maintenance" className="text-sm text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-100">
                   <span className="flex items-center gap-1">
                     <Wrench className="h-3.5 w-3.5" /> My Maintenance
+                  </span>
+                </Link>
+                <Link href="/practice-sessions" className="text-sm text-gray-600 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-100">
+                  <span className="flex items-center gap-1">
+                    <Timer className="h-3.5 w-3.5" /> Practice Sessions
                   </span>
                 </Link>
                 {isAdmin && (
@@ -96,6 +101,12 @@ export function Nav() {
               className="flex flex-shrink-0 items-center gap-1 rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-700"
             >
               <Wrench className="h-3.5 w-3.5" /> My Maintenance
+            </Link>
+            <Link
+              href="/practice-sessions"
+              className="flex flex-shrink-0 items-center gap-1 rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-700"
+            >
+              <Timer className="h-3.5 w-3.5" /> Practice Sessions
             </Link>
             {isAdmin && (
               <Link
