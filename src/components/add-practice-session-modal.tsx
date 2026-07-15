@@ -29,7 +29,7 @@ export function AddPracticeSessionModal({ guitarId }: { guitarId: string }) {
       await fetch('/api/practice-sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ guitarId, durationSeconds, rating }),
+        body: JSON.stringify({ segments: [{ guitarId, durationSeconds }], rating }),
       })
       setOpen(false)
       router.refresh()

@@ -33,7 +33,7 @@ export function LogPracticeSessionModal({ guitars }: { guitars: Guitar[] }) {
       await fetch('/api/practice-sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ guitarId: selectedGuitarId, durationSeconds, rating }),
+        body: JSON.stringify({ segments: [{ guitarId: selectedGuitarId, durationSeconds }], rating }),
       })
       setOpen(false)
       router.refresh()
