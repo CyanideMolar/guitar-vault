@@ -6,7 +6,14 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    # Production runs on arm64 (EC2 Graviton). Turbopack externalizes native
+    # modules like sharp instead of bundling them, baking in a build-time
+    # reference -- if this job built on x86_64 (ubuntu-latest) while
+    # production is arm64, that reference doesn't resolve at runtime
+    # ("Cannot find package 'sharp-<hash>'"), even though sharp itself is
+    # installed and working fine on the box. Building on the same
+    # architecture production runs on avoids this for any native module.
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
 
