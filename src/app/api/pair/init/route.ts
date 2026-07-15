@@ -13,7 +13,11 @@ export async function POST(req: NextRequest) {
   const expiresAt = new Date(Date.now() + PAIRING_TTL_MS)
   await prisma.pairingRequest.create({ data: { code, status: 'PENDING', expiresAt } })
 
-  const approvalUrl = new URL(`/pair?code=${code}`, req.nextUrl.origin).toString()
+  // req.nextUrl.origin reflects Next.js's internal address (e.g. localhost:3000)
+  // behind the nginx reverse proxy in production, not the public hostname --
+  // prefer AUTH_URL (already required for NextAuth) when it's set.
+  const origin = process.env.AUTH_URL ?? req.nextUrl.origin
+  const approvalUrl = new URL(`/pair?code=${code}`, origin).toString()
 
   return NextResponse.json({ code, expiresAt, approvalUrl }, { status: 201 })
 }
