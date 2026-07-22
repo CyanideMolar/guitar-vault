@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { auth, signIn } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { Guitar, Plus, ShieldCheck } from 'lucide-react'
+import { Guitar, Plus, ShieldCheck, Wrench } from 'lucide-react'
 import { QuickMaintenanceModal } from '@/components/quick-maintenance-modal'
 import { LogPracticeSessionModal } from '@/components/log-practice-session-modal'
+import { formatDate, formatCurrency } from '@/lib/utils'
 
 export default async function Home() {
   const session = await auth()
@@ -31,12 +32,18 @@ export default async function Home() {
     )
   }
 
-  const [user, guitars] = await Promise.all([
+  const [user, guitars, recentMaintenance] = await Promise.all([
     prisma.user.findUnique({ where: { id: session.user!.id } }),
     prisma.guitar.findMany({
       where: { ownerId: session.user!.id },
       select: { id: true, name: true, brand: true, model: true },
       orderBy: { sortOrder: 'asc' },
+    }),
+    prisma.maintenanceRecord.findMany({
+      where: { guitar: { ownerId: session.user!.id } },
+      include: { guitar: { select: { id: true, name: true, brand: true, model: true } } },
+      orderBy: { date: 'desc' },
+      take: 5,
     }),
   ])
   const isAdmin = user?.role === 'ADMIN'
@@ -95,7 +102,71 @@ export default async function Home() {
         )}
       </div>
 
+      <div className="mt-10">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900 dark:text-slate-100">
+            <Wrench className="h-5 w-5 text-gray-400 dark:text-slate-500" /> Recent Maintenance
+          </h2>
+          {recentMaintenance.length > 0 && (
+            <Link href="/maintenance" className="text-sm font-medium text-sky-700 hover:text-sky-800 dark:text-blue-400 dark:hover:text-blue-300">
+              View all
+            </Link>
+          )}
+        </div>
 
+        {recentMaintenance.length === 0 ? (
+          <div className="rounded-xl border-2 border-dashed border-gray-200 py-12 text-center text-gray-400 dark:border-slate-700 dark:text-slate-500">
+            <Wrench className="mx-auto mb-2 h-8 w-8" />
+            <p className="text-sm">No maintenance records yet.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-slate-700">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800/60">
+                  <th className="px-4 py-2 text-left font-medium uppercase tracking-wide text-xs text-gray-500 dark:text-slate-400">Guitar</th>
+                  <th className="px-4 py-2 text-left font-medium uppercase tracking-wide text-xs text-gray-500 dark:text-slate-400">Date</th>
+                  <th className="px-4 py-2 text-left font-medium uppercase tracking-wide text-xs text-gray-500 dark:text-slate-400">Type</th>
+                  <th className="px-4 py-2 text-left font-medium uppercase tracking-wide text-xs text-gray-500 dark:text-slate-400">Notes</th>
+                  <th className="px-4 py-2 text-right font-medium uppercase tracking-wide text-xs text-gray-500 dark:text-slate-400">Cost</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 bg-white dark:divide-slate-700 dark:bg-slate-800">
+                {recentMaintenance.map((record) => (
+                  <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-gray-900 dark:text-slate-100">{record.guitar.name}</div>
+                      {(record.guitar.brand || record.guitar.model) && (
+                        <div className="text-xs text-gray-400 dark:text-slate-500">
+                          {[record.guitar.brand, record.guitar.model].filter(Boolean).join(' · ')}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-gray-700 dark:text-slate-300 tabular-nums">
+                      {formatDate(record.date)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-wrap gap-1">
+                        {record.taskType.split(',').map((t) => t.trim()).filter(Boolean).map((task) => (
+                          <span key={task} className="inline-flex rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-800 dark:bg-blue-900/50 dark:text-blue-300">
+                            {task}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="max-w-xs px-4 py-3 text-gray-600 dark:text-slate-400">
+                      {record.notes ?? <span className="text-gray-300 dark:text-slate-600">—</span>}
+                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums text-gray-700 dark:text-slate-300">
+                      {record.cost != null ? formatCurrency(record.cost) : <span className="text-gray-300 dark:text-slate-600">—</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
